@@ -1,14 +1,27 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Users, Building, BarChart3, BookOpen, Shield } from 'lucide-react';
 import heroCampus from '@/assets/hero-campus.jpg';
 
 const Index = () => {
   const [selectedRole, setSelectedRole] = useState<'admin' | 'student' | null>(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Dummy credentials
+  const dummyCredentials = {
+    admin: { email: 'admin@college.edu', password: 'admin123' },
+    student: { email: 'priya@college.edu', password: 'student123' }
+  };
 
   const handleRoleSelect = (role: 'admin' | 'student') => {
     setSelectedRole(role);
@@ -17,12 +30,31 @@ const Index = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login success
-    if (selectedRole === 'admin') {
-      window.location.href = '/admin';
-    } else {
-      window.location.href = '/student';
-    }
+    setIsLoading(true);
+
+    // Simulate API delay
+    setTimeout(() => {
+      const credentials = dummyCredentials[selectedRole!];
+      
+      if (email === credentials.email && password === credentials.password) {
+        toast({
+          title: "Login Successful!",
+          description: `Welcome to the ${selectedRole} dashboard`,
+        });
+        
+        // Navigate to appropriate dashboard
+        setTimeout(() => {
+          navigate(selectedRole === 'admin' ? '/admin' : '/student');
+        }, 1000);
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid credentials. Try admin@college.edu/admin123 or priya@college.edu/student123",
+          variant: "destructive",
+        });
+      }
+      setIsLoading(false);
+    }, 1500);
   };
 
   if (showLogin) {
@@ -47,6 +79,9 @@ const Index = () => {
                   : 'Welcome back to your student portal'
                 }
               </p>
+              <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted/50 rounded">
+                Demo: {selectedRole === 'admin' ? 'admin@college.edu / admin123' : 'priya@college.edu / student123'}
+              </div>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -57,17 +92,25 @@ const Index = () => {
                 <Input 
                   id="email" 
                   type="email" 
-                  placeholder={selectedRole === 'admin' ? 'admin@college.edu' : 'student@college.edu'} 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={selectedRole === 'admin' ? 'admin@college.edu' : 'priya@college.edu'} 
                   required 
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required 
+                />
               </div>
               
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
               
               <Button 

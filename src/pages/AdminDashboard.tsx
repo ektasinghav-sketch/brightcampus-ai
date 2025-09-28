@@ -1,6 +1,10 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import StudentForm from '@/components/StudentForm';
 import { 
   Users, 
   Building, 
@@ -15,6 +19,61 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showStudentForm, setShowStudentForm] = useState(false);
+  const [students, setStudents] = useState([
+    { name: "Priya Sharma", id: "CS2024001", course: "Computer Science", status: "active" },
+    { name: "Rahul Gupta", id: "ME2024002", course: "Mechanical Eng.", status: "pending" },
+    { name: "Anjali Patel", id: "EC2024003", course: "Electronics", status: "active" },
+    { name: "Vikram Singh", id: "CS2024004", course: "Computer Science", status: "active" },
+    { name: "Meera Kumar", id: "BT2024005", course: "Biotechnology", status: "pending" }
+  ]);
+
+  const [metrics, setMetrics] = useState({
+    totalStudents: 2847,
+    hostelOccupancy: 89,
+    feeCollection: 45.2,
+    pendingApplications: 47
+  });
+
+  const handleAddStudent = (newStudent: any) => {
+    setStudents(prev => [newStudent, ...prev]);
+    setMetrics(prev => ({
+      ...prev,
+      totalStudents: prev.totalStudents + 1,
+      pendingApplications: prev.pendingApplications - 1
+    }));
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch(action) {
+      case 'add-student':
+        setShowStudentForm(true);
+        break;
+      case 'manage-hostels':
+        toast({
+          title: "Hostel Management",
+          description: "Opening hostel management panel...",
+        });
+        break;
+      case 'fee-reports':
+        toast({
+          title: "Fee Reports",
+          description: "Generating comprehensive fee reports...",
+        });
+        break;
+      case 'analytics':
+        toast({
+          title: "Analytics Dashboard",
+          description: "Loading advanced analytics...",
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -29,7 +88,7 @@ const AdminDashboard = () => {
               <p className="text-sm text-muted-foreground">Campus Connect ERP</p>
             </div>
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => navigate('/')}>
             <Home className="w-4 h-4 mr-2" />
             Back to Portal
           </Button>
@@ -46,7 +105,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Total Students</p>
-                    <p className="text-2xl font-bold text-foreground">2,847</p>
+                    <p className="text-2xl font-bold text-foreground">{metrics.totalStudents.toLocaleString()}</p>
                     <div className="flex items-center mt-2">
                       <TrendingUp className="w-4 h-4 text-accent mr-1" />
                       <span className="text-accent text-sm font-medium">+12% from last month</span>
@@ -64,7 +123,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Hostel Occupancy</p>
-                    <p className="text-2xl font-bold text-foreground">89%</p>
+                    <p className="text-2xl font-bold text-foreground">{metrics.hostelOccupancy}%</p>
                     <div className="flex items-center mt-2">
                       <AlertCircle className="w-4 h-4 text-warning mr-1" />
                       <span className="text-warning text-sm font-medium">Near capacity</span>
@@ -82,7 +141,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Fee Collection</p>
-                    <p className="text-2xl font-bold text-foreground">₹45.2L</p>
+                    <p className="text-2xl font-bold text-foreground">₹{metrics.feeCollection}L</p>
                     <div className="flex items-center mt-2">
                       <CheckCircle className="w-4 h-4 text-accent mr-1" />
                       <span className="text-accent text-sm font-medium">94% collected</span>
@@ -100,7 +159,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Pending Applications</p>
-                    <p className="text-2xl font-bold text-foreground">47</p>
+                    <p className="text-2xl font-bold text-foreground">{metrics.pendingApplications}</p>
                     <div className="flex items-center mt-2">
                       <Clock className="w-4 h-4 text-muted-foreground mr-1" />
                       <span className="text-muted-foreground text-sm font-medium">Awaiting review</span>
@@ -127,13 +186,7 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { name: "Priya Sharma", id: "CS2024001", course: "Computer Science", status: "active" },
-                    { name: "Rahul Gupta", id: "ME2024002", course: "Mechanical Eng.", status: "pending" },
-                    { name: "Anjali Patel", id: "EC2024003", course: "Electronics", status: "active" },
-                    { name: "Vikram Singh", id: "CS2024004", course: "Computer Science", status: "active" },
-                    { name: "Meera Kumar", id: "BT2024005", course: "Biotechnology", status: "pending" }
-                  ].map((student, index) => (
+                  {students.slice(0, 5).map((student, index) => (
                     <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
@@ -163,19 +216,34 @@ const AdminDashboard = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-start">
+                <Button 
+                  className="w-full justify-start"
+                  onClick={() => handleQuickAction('add-student')}
+                >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add New Student
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => handleQuickAction('manage-hostels')}
+                >
                   <Building className="w-4 h-4 mr-2" />
                   Manage Hostels
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => handleQuickAction('fee-reports')}
+                >
                   <DollarSign className="w-4 h-4 mr-2" />
                   Fee Reports
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => handleQuickAction('analytics')}
+                >
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Analytics
                 </Button>
@@ -207,6 +275,13 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+      
+      {showStudentForm && (
+        <StudentForm
+          onClose={() => setShowStudentForm(false)}
+          onSubmit={handleAddStudent}
+        />
+      )}
     </div>
   );
 };
